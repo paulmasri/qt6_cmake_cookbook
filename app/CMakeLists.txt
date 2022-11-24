@@ -1,0 +1,28 @@
+cmake_minimum_required(VERSION 3.21)
+
+find_package(Qt6 6.2 COMPONENTS Quick REQUIRED)
+
+qt_add_executable(appMyApp
+    main.cpp
+)
+
+qt_add_qml_module(appMyApp
+    URI MyApp
+    VERSION 1.0
+    QML_FILES main.qml
+)
+
+set_target_properties(appMyApp PROPERTIES
+    MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
+    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}
+    MACOSX_BUNDLE TRUE
+    WIN32_EXECUTABLE TRUE
+)
+
+target_link_libraries(appMyApp
+    PRIVATE Qt6::Quick)
+
+install(TARGETS appMyApp
+    BUNDLE DESTINATION .
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})

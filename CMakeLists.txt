@@ -1,33 +1,18 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(MyApp VERSION 0.1 LANGUAGES CXX)
+project(MyApp VERSION 0.0.1 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 6.2 COMPONENTS Quick REQUIRED)
+add_subdirectory(app)
 
-qt_add_executable(appMyApp
-    main.cpp
+include(CTest)
+add_subdirectory(tests)
+enable_testing()
+
+# Other files: for inclusion (easy access in Qt Creator) but not for compiling
+add_custom_target(non-compiled-files SOURCES
+    README.md
 )
-
-qt_add_qml_module(appMyApp
-    URI MyApp
-    VERSION 1.0
-    QML_FILES main.qml 
-)
-
-set_target_properties(appMyApp PROPERTIES
-    MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
-    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
-    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-    MACOSX_BUNDLE TRUE
-    WIN32_EXECUTABLE TRUE
-)
-
-target_link_libraries(appMyApp
-    PRIVATE Qt6::Quick)
-
-install(TARGETS appMyApp
-    BUNDLE DESTINATION .
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
