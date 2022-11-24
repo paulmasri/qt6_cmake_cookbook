@@ -11,4 +11,11 @@ Window { id: root
         name: "Bob"
         age: 27
     }
+
+    Animal {
+        id: panther
+        species: "panther"
+        name: "Jerry"
+        age: 2
+    }
 }

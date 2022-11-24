@@ -10,7 +10,7 @@ qt_add_qml_module(appMyApp
     QML_FILES main.qml
 )
 
-add_subdirectory(object_types)
+add_subdirectory(ObjectTypes)
 
 set_target_properties(appMyApp PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
