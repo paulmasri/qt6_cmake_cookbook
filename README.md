@@ -142,3 +142,4 @@ There are a few tricky things to get right for this to work.
 	```
 	set_target_properties(LibraryName PROPERTIES AUTOMOC ON)
 	```
+    _(I'm unclear whether this is needed if the root CMakeLists.txt has `set(CMAKE_AUTOMOC ON)`)_
