@@ -15,5 +15,6 @@ target_include_directories(CountableModelsLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 
 target_link_libraries(CountableModelsLib
     PRIVATE Qt6::Quick Qt6::Qml
+    CommonHeadersLib
     ToDoListModelLib
 )

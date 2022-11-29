@@ -1,5 +1,7 @@
 #include "ToDoListModel.h"
 
+#include "MyCommonHeaders.h"
+
 ToDoModel::ToDoModel(QObject *parent)
     : QAbstractListModel(parent)
     , mList(nullptr)
@@ -27,6 +29,8 @@ QVariant ToDoModel::data(const QModelIndex &index, int role) const
         return QVariant(item.done);
     case DescriptionRole:
         return QVariant(item.description);
+    default:
+        return QVariant(MyCommonHeaders::whatIsTheAnswerToLifeTheUniverseAndEverything());
     }
 
     return QVariant();

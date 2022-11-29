@@ -14,6 +14,6 @@ qt_add_qml_module(ToDoListModelLib
 target_include_directories(ToDoListModelLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(ToDoListModelLib
-    PRIVATE Qt6::Quick
+    PRIVATE Qt6::Quick CommonHeadersLib
     PUBLIC ToDoObjectsLib
 )

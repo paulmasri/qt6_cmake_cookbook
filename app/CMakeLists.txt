@@ -10,6 +10,7 @@ qt_add_qml_module(appMyApp
     QML_FILES main.qml
 )
 
+add_subdirectory(CommonHeaders)
 add_subdirectory(ToDoObjects)
 add_subdirectory(ToDoListModel)
 add_subdirectory(CountableModels)

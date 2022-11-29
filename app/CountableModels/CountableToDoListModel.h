@@ -3,12 +3,14 @@
 #include "ToDoListModel.h"
 
 #include <QtQml>
+#include "IMyInterface.h"
 #include "ToDoObjects.h"
 
-class CountableToDoModel : public ToDoModel
+class CountableToDoModel : public ToDoModel, public IMyInterface
 {
     Q_OBJECT
     QML_ELEMENT
+    Q_INTERFACES(IMyInterface)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
@@ -19,7 +21,7 @@ public:
     void setList(ToDoList *list) override;
 
 signals:
-    void countChanged();
+    void countChanged() override; // implements IMyInterface
 
 private:
     void makeConnections() override;

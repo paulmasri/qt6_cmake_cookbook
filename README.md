@@ -140,6 +140,35 @@ target_link_libraries(UserLib
 )
 ```
 
+## Common headers
+
+### Purpose
+
+Where a project has some common headers, e.g. macros, interfaces, these can be wrapped in a library too. In this case the library is not compiled as a QML module, so there's no `qt_add_qml_module` and so the files are added directly to `qt_add_library`. However the principles of linking and including are the same.
+
+### Implementation
+
+1. In the `CommonHeaders` subdirectory we have header files `MyMacros.h` & `IMyInterface.h`. In the CMakeLists.txt of the same directory:
+	```
+	list(APPEND MODULE_SOURCE_FILES
+		MyMacros.h
+		IMyInterface.h
+	)
+
+	qt_add_library(CommonHeadersLib STATIC ${MODULE_SOURCE_FILES})
+
+	target_include_directories(CommonHeadersLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+	target_link_libraries(CommonHeadersLib PRIVATE Qt6::Core)
+	```
+	The `target_link_libraries` is not required if there aren't any libraries to link to. In this example, `IMyInterface` includes `QObject` so `Qt6::Core` is needed.
+1. For any library that uses these headers, we need to link to the `CommonHeaders` library. In the `UsingHeaders` library CMake:
+	```
+	target_link_libraries(UsingHeadersLib
+	    PRIVATE ... CommonHeadersLib
+	)
+	```
+	
 ## QML components
 
 ### Purpose
