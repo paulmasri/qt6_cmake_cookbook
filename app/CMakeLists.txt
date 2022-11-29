@@ -10,6 +10,8 @@ qt_add_qml_module(appMyApp
     QML_FILES main.qml
 )
 
+add_subdirectory(ToDoObjects)
+add_subdirectory(ToDoListModel)
 add_subdirectory(ObjectTypes)
 
 set_target_properties(appMyApp PROPERTIES
