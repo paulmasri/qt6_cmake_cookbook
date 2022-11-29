@@ -12,6 +12,7 @@ qt_add_qml_module(appMyApp
 
 add_subdirectory(ToDoObjects)
 add_subdirectory(ToDoListModel)
+add_subdirectory(CountableModels)
 add_subdirectory(ObjectTypes)
 
 set_target_properties(appMyApp PROPERTIES
@@ -24,6 +25,7 @@ set_target_properties(appMyApp PROPERTIES
 
 target_link_libraries(appMyApp
     PRIVATE Qt6::Qml Qt6::Quick
+    CountableModelsLibplugin
     ObjectTypesLibplugin
 )
 

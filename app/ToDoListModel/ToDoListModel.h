@@ -32,8 +32,10 @@ public:
     virtual QHash<int, QByteArray> roleNames() const override;
 
     ToDoList *list() const;
-    void setList(ToDoList *list);
+    virtual void setList(ToDoList *list);
 
-private:
+protected:
+    virtual void makeConnections();
+
     ToDoList *mList;
 };

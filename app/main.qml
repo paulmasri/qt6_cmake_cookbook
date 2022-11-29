@@ -1,4 +1,5 @@
 import QtQuick
+import CountableModels
 import ObjectTypes
 
 Window { id: root
@@ -17,5 +18,8 @@ Window { id: root
         species: "panther"
         name: "Jerry"
         age: 2
+    }
+
+    CountableToDoModel { id: toDoListModel
     }
 }

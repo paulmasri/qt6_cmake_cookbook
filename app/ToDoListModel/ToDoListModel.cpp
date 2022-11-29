@@ -84,6 +84,13 @@ void ToDoModel::setList(ToDoList *list)
 
     mList = list;
 
+    makeConnections();
+
+    endResetModel();
+}
+
+void ToDoModel::makeConnections()
+{
     if (mList) {
         connect(mList, &ToDoList::preItemAppended, this, [=]() {
             const int index = mList->items().size();
@@ -100,6 +107,4 @@ void ToDoModel::setList(ToDoList *list)
             endRemoveRows();
         });
     }
-
-    endResetModel();
 }

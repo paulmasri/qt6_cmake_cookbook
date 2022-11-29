@@ -111,10 +111,34 @@ A library defines its include directories with `target_include_directories`. Dir
 	NB: In this case if `INTERFACE` had been used it would be equivalent (if semantically misleading), since this folder is already available to files in this folder.
 1. In `User/CMakeLists.txt`, link to the `Used` library:
 	```
-	target_link_libraries(ToDoListModelLib
+	target_link_libraries(UserLib
 	    PRIVATE ... UsedLib
 	)
 	```
+
+### Extending the chain of dependencies
+
+Now take the case of a longer chain of dependencies — `EndUser` library uses `User` library uses `Used` library — _and_ files in `EndUser` need to include not only files in the `User` library but also files in the `Used` library.
+
+We _could_ link `EndUser` to `Used` directly. In `EndUser/CMakeLists.txt`:
+```
+# Not recommended!
+target_link_libraries(EndUserLib
+	PRIVATE ... UserLib UsedLib
+)
+```
+
+but this requires that the developer of `EndUser` needs to know about `UsedLib`, and this chain could get unmanageably long if extended further.
+
+A better scoped, and more efficient, approach is for `User` library to expose `Used` library in its linkage, where users of `User` may have a need to directly access `Used`.
+
+In `User/CMakeLists.txt`:
+```
+target_link_libraries(UserLib
+	PRIVATE ...
+	PUBLIC UsedLib
+)
+```
 
 ## QML components
 
