@@ -86,6 +86,36 @@ Where a C++ class derives from `QObject` and contains `QML_ELEMENT` (as well as 
 	}
 	```
 
+## Libraries that depend on other libraries
+
+### Purpose
+
+Where a C++ class in one library `User` depends on a class in another library `Used`, the `User` library needs to link to the `Used` library and the `Used` library needs to expose its include files.
+
+(In this repo, see `ToDoListModel` which uses `ToDoObjects`.)
+
+### Implementation
+
+A library defines its include directories with `target_include_directories`. Directories can be `PRIVATE`, `PUBLIC` or `INTERFACE` and you can have a mixture of them within the one command.
+
+`PRIVATE` means that only files within this library have this directory in their include list. (The current directory is always in the include list anyway.)
+
+`INTERFACE` means that users of this library have this directory in their include list.
+
+`PUBLIC` means `PRIVATE` + `INTERFACE`. i.e. files within this library and external users of this library both have this directory in their include list.
+
+1. In `Used/CMakeLists.txt`, expose the `Used` folder itself as an include folder. Since this CMake file is the current one being processed, `CMAKE_CURRENT_SOURCE_DIR` refers to this folder:
+	```
+	target_include_directories(UsedLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+	```
+	NB: In this case if `INTERFACE` had been used it would be equivalent (if semantically misleading), since this folder is already available to files in this folder.
+1. In `User/CMakeLists.txt`, link to the `Used` library:
+	```
+	target_link_libraries(ToDoListModelLib
+	    PRIVATE ... UsedLib
+	)
+	```
+
 ## QML components
 
 ### Purpose
