@@ -1,6 +1,8 @@
 # qt6_cmake_subdirectories
 
-A test project combining CMake for Qt6 with subdirectories
+A test project combining CMake for Qt6 with subdirectories.
+
+**This is a work-in-progress. When this message disappears, it is safe for use. ETA Jan 2023.**
 
 ## Subdirectories
 
@@ -168,7 +170,7 @@ Where a project has some common headers, e.g. macros, interfaces, these can be w
 	    PRIVATE ... CommonHeadersLib
 	)
 	```
-	
+
 ## QML components
 
 ### Purpose
