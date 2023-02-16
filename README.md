@@ -1,8 +1,8 @@
-# qt6_cmake_subdirectories
+# qt6_cmake_cookbook
 
-A test project combining CMake for Qt6 with subdirectories.
+A cookbook and instruction manual for writing CMake for Qt6 for cross-platform apps.
 
-**This is a work-in-progress. When this message disappears, it is safe for use. ETA Jan 2023.**
+**This is a work-in-progress. When this message disappears, it is safe for use. ETA Apr 2023.**
 
 ## Subdirectories
 
