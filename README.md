@@ -2,229 +2,72 @@
 
 A cookbook and instruction manual for writing CMake for Qt6 for cross-platform apps.
 
-**This is a work-in-progress. When this message disappears, it is safe for use. ETA Apr 2023.**
+My own production app is a Qt Quick app, so my architecture matches this use case.
 
-## Subdirectories
+## Start with the root-level CMake file
 
-### Purpose
-Use a subdirectory to create a _library_. Within this subdirectory, you can include various files (source, QML & JS, resources) and compile them as a self-contained unit.
+The root level CMake file `CMakeLists.txt`
+- sets up the project,
+- adds in code modules as 'libraries',
+- adds in the app itself, as an executable target that is also a QML module,
+- adds in test modules that may make use of the libraries.
 
-The subdirectory has its own CMakeLists.txt file that defines the library, what it contains and what it links against.
+### Project setup
 
-This library can then be linked against by other targets that need to use its classes or components. In QML it is imported using its URI.
+Qt provides a number of [its own CMake commands](https://doc.qt.io/qt-6/cmake-command-reference.html). These have evolved and changed considerably since Qt 6.2 and the versions supported here are based on Qt 6.5. This repo has been tested against Qt 6.8.0.
 
-### Implementation
-1. Create a subdirectory; e.g. NewDirectory
-1. In the parent directory CMakeLists.txt
-	```
-	add_subdirectory(NewDirectory)
-	```
-1. Add a CMakeLists.txt in the subdirectory that contains the following calls
-	```
-	qt_add_library(LibraryName [STATIC|SHARED])
+I use [`qt_standard_project_setup`](https://doc.qt.io/qt-6/qt-standard-project-setup.html) provided in `Qt6::Core` to set up the project, which avoids the need to manually ensure auto-moc or auto-rcc, for example.
 
-	qt_add_qml_module(LibraryName
-		URI LibraryURI
-		VERSION 1.0
-		SOURCES ...
-		QML_FILES ...
-		RESOURCES ...
-	)
+### Adding libraries/modules
 
-	target_link_libraries(ObjectTypesLib PRIVATE [e.g. Qt6::Qml Qt6::Quick])
-	```
+Each library, module, and even the executable target, sits in its own subdirectory in the filespace, has its own CMake file, and is added with the command `add_subdirectory`. By structuring it this way, the libraries can be made available to both the app and the tests.
 
-## Static vs Shared libraries
+Although a flatter structure would technically be possible, you would still need a separate library for each QML module, because of how Qt creates them. More on that below.
 
-A static library is compiled into the executable, so it gets bundled as part of that file. A shared library is compiled as a standalone library that can be dynamically loaded (.dll for Windows, .dylib for MacOS).
+## How to create a library
 
-If in doubt, go for a static library.
+See `CommonHeaders/CMakeLists.txt`, which creates a C++ library that does not have a QML counterpart. These are the simplest libraries and contain all the elements needed for all libraries.
 
-### Creating and linking a static library
+1. We use [`qt_add_library`](https://doc.qt.io/qt-6/qt-add-library.html) to define the library and specify its source files (which can include header files, e.g. `.h`, as well as source files, e.g. `.cpp`).
 
-1. Within the subdirectory CMakeLists.txt, set the library to be static
-	```
-	qt_add_library(LibraryName STATIC)
-	```
-1. Within the parent CMakeLists.txt, link to the _plugin for the library_ that qt_add_qml_module() creates. This always has the same name as the library with `plugin` appended.
-	```
-	target_link_libraries(appMyApp
-		PRIVATE [e.g. Qt6::Qml Qt6::Quick]
-		LibraryNameplugin
-	)
-	```
+   By convention, the name of the library is the name of the directory with `Lib` appended. e.g. `CommonHeadersLib` for the library in the `CommonHeaders` directory.
 
-### Creating and linking a shared library
+2. Source files in this directory need to be able to `#include` one another without any path, so we have `target_include_directories` for this directory. (`${CMAKE_CURRENT_SOURCE_DIR}` is the path of the directory of this CMake file.)
 
-1. Within the subdirectory CMakeLists.txt, set the library to be shared
-	```
-	qt_add_library(LibraryName SHARED)
-	```
-1. Within the parent CMakeLists.txt, link to the library itself
-	```
-	target_link_libraries(appMyApp
-		PRIVATE [e.g. Qt6::Qml Qt6::Quick]
-		LibraryName
-	)
-	```
+3. Any libraries that are `#include`d by the source files are linked using `target_link_libraries`. In the `CommonHeaders` example, we don't reference any of our other libraries, just Qt's Core module.
 
-## C++ classes that extend QML
+### PUBLIC vs PRIVATE linking
 
-### Purpose
+In the previous example, `target_link_libraries` only used the `PUBLIC` keyword. In general you will use `PRIVATE` and `PUBLIC` and their usage is important.
 
-Where a C++ class derives from `QObject` and contains `QML_ELEMENT` (as well as `Q_OBJECT` of course), it extends QML and can be instantiated as a QML component.
+Any libraries following the `PRIVATE` keyword are only available to this library whereas any libraries following the `PUBLIC` keyword become available to a library that links to this one.
 
-### Implementation
+A simple rule of thumb is:
 
-1. Place the class source files in the subdirectory and list them as `SOURCES` in the library CMake file.
-1. In QML
-	```
-	import QtQuick
-	import LibraryURI
+- **`Use PRIVATE`**, where you `#include` a library's header in source file(s) and **not in any of the header files**.
+- **`Use PUBLIC`**, for any other libraries you `#include`.
 
-	...
-	ClassDefinedInLibrary {
-		...
-	}
-	```
+So in the case of `ToDoListModel/CMakeLists.txt`,
+- `CommonHeadersLib` is privately linked because `MyCommonHeaders.h` is included in the `.cpp` file and not the `.h` file, and so any libraries that use `ToDoModel` do not need to know about this link.
+- `Qt Quick` is publicly linked because the header file has `#include <QAbstractListModel>` and any library using this one will need to understand the `QAbstractListModel` class.
+- `ToDoObjects` is publicly linked because the header file has `#include "ToDoObjects.h"` and `ToDoList` is the return type of `list()`, so any library that uses this one will also need to understand `ToDoList`.
 
-## Libraries that depend on other libraries
+## How to create a QML module library
 
-### Purpose
+A QML module is a special kind of library. Since Qt 6.2, Qt has made it easy to create a QML module using `qt_add_qml_module`.
 
-Where a C++ class in one library `User` depends on a class in another library `Used`, the `User` library needs to link to the `Used` library and the `Used` library needs to expose its include files.
+If you're migrating from Qmake or you've been used to creating QML modules before Qt 6.2, you'll be familiar with having to register each module in your `main.cpp` and ensuring you've created a `qmldir`. Fortunately `qt_add_qml_module` does all of this for you. But it doesn't come without its own idiosyncracies.
 
-(In this repo, see `ToDoListModel` which uses `ToDoObjects`.)
+Let's consider a C++ class that extends QML. See `ToDoListModel/CMakeLists.txt`.
 
-### Implementation
+1. We use `qt_add_library` to define the library, but we do not specify any source files here.
+2. We use `qt_add_qml_module` to generate a QML module associated with the library, and this is where we specify the source files.
+   1. We need to set a `URI`, in this case `ToDoListModel`. After building, this will enable you to use `import ToDoListModel` in your QML files.
+   2. As of Qt 6.5, it is necessary to specify `RESOURCE_PREFIX`. My personal choice is to set it to `/`. If you were to set it to `RESOURCE_PREFIX /my/custom/path` then you'd have to use `import my/custom/path/ToDoListModel` in QML.
+   3. Set the `VERSION`. By default I always set this to `1.0`. Note that as of Qt 6 (6.2?), [QML `import` statements no longer need to specify the version](https://doc.qt.io/qt-6/qtqml-syntax-imports.html), to use the latest version, so I see this as boilerplate code.
+3. Now look at the C++. To make an item available to QML engine, you also need to declare it using one of the [QQmlEngine macros](https://doc.qt.io/qt-6/qqmlengine.html#macros) in your C++.
+   1. `#include <QtQml>` to make those macros available.
+   2. The most common macro is `QML_ELEMENT` which you apply to a `QObject` derived class, alongside `Q_OBJECT`. By doing this, its properties and `Q_INVOKABLE` functions become available in QML. See `ToDoListModel/ToDoListModel.h`.
+4. Finally, when we link the main app target to this library (see `app/CMakeLists.txt`), because we want it to have the QML module, not a C++ library, within `target_link_libraries` we link to `ToDoListModelLibplugin` instead of linking to `ToDoListModelLib`. This gets generated for us by `qt_add_qml_module`. Note that the suffix is `plugin`, all lowercase.
 
-A library defines its include directories with `target_include_directories`. Directories can be `PRIVATE`, `PUBLIC` or `INTERFACE` and you can have a mixture of them within the one command.
-
-`PRIVATE` means that only files within this library have this directory in their include list. (The current directory is always in the include list anyway.)
-
-`INTERFACE` means that users of this library have this directory in their include list.
-
-`PUBLIC` means `PRIVATE` + `INTERFACE`. i.e. files within this library and external users of this library both have this directory in their include list.
-
-1. In `Used/CMakeLists.txt`, expose the `Used` folder itself as an include folder. Since this CMake file is the current one being processed, `CMAKE_CURRENT_SOURCE_DIR` refers to this folder:
-	```
-	target_include_directories(UsedLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-	```
-	NB: In this case if `INTERFACE` had been used it would be equivalent (if semantically misleading), since this folder is already available to files in this folder.
-1. In `User/CMakeLists.txt`, link to the `Used` library:
-	```
-	target_link_libraries(UserLib
-	    PRIVATE ... UsedLib
-	)
-	```
-
-### Extending the chain of dependencies
-
-Now take the case of a longer chain of dependencies — `EndUser` library uses `User` library uses `Used` library — _and_ files in `EndUser` need to include not only files in the `User` library but also files in the `Used` library.
-
-We _could_ link `EndUser` to `Used` directly. In `EndUser/CMakeLists.txt`:
-```
-# Not recommended!
-target_link_libraries(EndUserLib
-	PRIVATE ... UserLib UsedLib
-)
-```
-
-but this requires that the developer of `EndUser` needs to know about `UsedLib`, and this chain could get unmanageably long if extended further.
-
-A better scoped, and more efficient, approach is for `User` library to expose `Used` library in its linkage, where users of `User` may have a need to directly access `Used`.
-
-In `User/CMakeLists.txt`:
-```
-target_link_libraries(UserLib
-	PRIVATE ...
-	PUBLIC UsedLib
-)
-```
-
-## Common headers
-
-### Purpose
-
-Where a project has some common headers, e.g. macros, interfaces, these can be wrapped in a library too. In this case the library is not compiled as a QML module, so there's no `qt_add_qml_module` and so the files are added directly to `qt_add_library`. However the principles of linking and including are the same.
-
-### Implementation
-
-1. In the `CommonHeaders` subdirectory we have header files `MyMacros.h` & `IMyInterface.h`. In the CMakeLists.txt of the same directory:
-	```
-	list(APPEND MODULE_SOURCE_FILES
-		MyMacros.h
-		IMyInterface.h
-	)
-
-	qt_add_library(CommonHeadersLib STATIC ${MODULE_SOURCE_FILES})
-
-	target_include_directories(CommonHeadersLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-
-	target_link_libraries(CommonHeadersLib PRIVATE Qt6::Core)
-	```
-	The `target_link_libraries` is not required if there aren't any libraries to link to. In this example, `IMyInterface` includes `QObject` so `Qt6::Core` is needed.
-1. For any library that uses these headers, we need to link to the `CommonHeaders` library. In the `UsingHeaders` library CMake:
-	```
-	target_link_libraries(UsingHeadersLib
-	    PRIVATE ... CommonHeadersLib
-	)
-	```
-
-## QML components
-
-### Purpose
-
-It may also be useful to have QML files in a library. Perhaps it makes logical sense to group certain components in their own module. Perhaps they relate to C++ classes in the library. Or perhaps they use other QML files that should remain private to the library. (See the Widgets library [in the example by Lukas Kosiński of Scythe Studio](https://github.com/scytheStudio/qt_add_qml_module_example).)
-
-### Implementation
-
-There are a few tricky things to get right for this to work.
-1. The subdirectory must have the same name as the library for qmllint to work. i.e. put the `LibraryName` library in the `LibraryName` subdirectory.
-1. The import path must match. There are two options:
-	1. You can define a custom path
-		- Within every CMakeLists.txt that contains QML use the same `RESOURCE_PREFIX`
-			```
-			qt_add_qml_module(
-				...
-				RESOURCE_PREFIX /my/custom/imports
-				...
-			)
-			```
-		- In main.cpp, add the import path and specify main.qml within that path too
-			```
-			QQmlApplicationEngine engine;
-
-			engine.addImportPath("qrc:/my/custom/imports");
-
-			const QUrl url(u"qrc:/my/custom/imports/MyApp/main.qml"_qs);
-
-			QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
-							&app, [url](QObject *obj, const QUrl &objUrl) {
-				if (!obj && url == objUrl)
-					QCoreApplication::exit(-1);
-			}, Qt::QueuedConnection);
-			engine.load(url);
-
-			```
-	2. You can define an empty import path in main.cpp and skip using `RESOURCE_PREFIX` in any CMake file.
-		```
-		QQmlApplicationEngine engine;
-
-		engine.addImportPath("qrc:/");
-
-		const QUrl url(u"qrc:/MyApp/main.qml"_qs);
-
-		QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
-						&app, [url](QObject *obj, const QUrl &objUrl) {
-			if (!obj && url == objUrl)
-				QCoreApplication::exit(-1);
-		}, Qt::QueuedConnection);
-		engine.load(url);
-
-		```
-1. Within the library CMakeLists.txt you need to include the following
-	```
-	set_target_properties(LibraryName PROPERTIES AUTOMOC ON)
-	```
-    _(I'm unclear whether this is needed if the root CMakeLists.txt has `set(CMAKE_AUTOMOC ON)`)_
+See `ObjectTypes/CMakeLists.txt` for a more complex example of a QML module that contains a QML file as well as a C++ class.

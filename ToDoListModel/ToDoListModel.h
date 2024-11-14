@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QAbstractListModel>
+#include <QtQml>
 
 #include "ToDoObjects.h"
 //Q_MOC_INCLUDE("todolist.h")
@@ -8,6 +9,7 @@
 class ToDoModel : public QAbstractListModel
 {
     Q_OBJECT
+    QML_ELEMENT
     Q_PROPERTY(ToDoList *list READ list WRITE setList)
 
 public:
