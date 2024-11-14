@@ -2,7 +2,22 @@
 
 A cookbook and instruction manual for writing CMake for Qt6 for cross-platform apps.
 
-**This is a work-in-progress. When this message disappears, it is safe for use. ETA Apr 2023.**
+My own production app is a Qt Quick app, so my architecture matches this use case.
+
+## Overview
+
+The root level CMake file `CMakeLists.txt`
+- sets up the project,
+- adds in code modules as 'libraries',
+- adds in the app itself, as an executable target that is also a QML module,
+- adds in test modules that may make use of the libraries.
+
+Qt provides a number of [its own CMake commands](https://doc.qt.io/qt-6/cmake-command-reference.html). These have evolved and changed considerably since Qt 6.2 and the versions supported here are based on Qt 6.5. This repo has been tested against Qt 6.8.0.
+Each item that is added sits in a subdirectory in the filespace, has its own CMake file, and is added with the command `add_subdirectory`.
+## C++ libraries
+
+See `CommonHeaders` example.
+
 
 ## Subdirectories
 
