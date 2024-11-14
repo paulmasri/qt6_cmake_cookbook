@@ -1,7 +1,7 @@
 set(APP_TARGET MyApp)
 set(APP_NAME "My app")
 
-find_package(Qt6 6.5 COMPONENTS Qml Quick REQUIRED)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Qml Quick)
 
 qt_add_executable(${APP_TARGET} main.cpp)
 
