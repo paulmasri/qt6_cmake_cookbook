@@ -7,4 +7,6 @@ qt_add_library(CommonHeadersLib STATIC ${MODULE_SOURCE_FILES})
 
 target_include_directories(CommonHeadersLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(CommonHeadersLib PRIVATE Qt6::Core)
+target_link_libraries(CommonHeadersLib
+    PUBLIC Qt6::Core
+)
