@@ -21,6 +21,9 @@ set_target_properties(${APP_TARGET} PROPERTIES
     WIN32_EXECUTABLE TRUE
 )
 
+target_compile_definitions(${APP_TARGET}
+    PRIVATE $<$<CONFIG:Debug>:QT_QML_DEBUG>)
+
 target_link_libraries(${APP_TARGET}
     PRIVATE Qt6::Qml Qt6::Quick
 
