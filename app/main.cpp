@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
     engine.addImportPath("qrc:/");
 
-    const QUrl url(u"qrc:/MyApp/main.qml"_qs);
+    const QUrl url(u"qrc:/Primary/Main.qml"_qs);
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
                      &app, [url](QObject *obj, const QUrl &objUrl) {
         if (!obj && url == objUrl)
