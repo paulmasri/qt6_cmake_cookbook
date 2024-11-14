@@ -9,6 +9,7 @@ list(APPEND MODULE_QML_FILES
 
 qt_add_qml_module(ObjectTypesLib
     URI ObjectTypes
+    RESOURCE_PREFIX /
     VERSION 1.0
     SOURCES ${MODULE_SOURCE_FILES}
     QML_FILES ${MODULE_QML_FILES}

@@ -6,6 +6,7 @@ list(APPEND MODULE_SOURCE_FILES
 
 qt_add_qml_module(ToDoListModelLib
     URI ToDoListModel
+    RESOURCE_PREFIX /
     VERSION 1.0
     SOURCES
     ${MODULE_SOURCE_FILES}

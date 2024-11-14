@@ -6,6 +6,7 @@ list(APPEND MODULE_SOURCE_FILES
 
 qt_add_qml_module(CountableModelsLib
     URI CountableModels
+    RESOURCE_PREFIX /
     VERSION 1.0
     SOURCES
     ${MODULE_SOURCE_FILES}
