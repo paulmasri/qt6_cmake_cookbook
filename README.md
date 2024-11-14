@@ -2,7 +2,13 @@
 
 A cookbook and instruction manual for writing CMake for Qt6 for cross-platform apps.
 
-My own production app is a Qt Quick app, so my architecture matches this use case.
+This is for anyone getting starting with Qt using CMake, or migrating from qmake to CMake. Hopefully it'll save you a lot of time and stress.
+
+If you like it, please star it on Github and share it. If you find any issues or want to get in touch, create a Git issue or find me via the Qt Discord server. Thanks!
+
+_Note: My own production app is a Qt Quick app, so the cookbook architecture matches this use case._
+
+
 
 ## Start with the root-level CMake file
 
@@ -71,3 +77,12 @@ Let's consider a C++ class that extends QML. See `ToDoListModel/CMakeLists.txt`.
 4. Finally, when we link the main app target to this library (see `app/CMakeLists.txt`), because we want it to have the QML module, not a C++ library, within `target_link_libraries` we link to `ToDoListModelLibplugin` instead of linking to `ToDoListModelLib`. This gets generated for us by `qt_add_qml_module`. Note that the suffix is `plugin`, all lowercase.
 
 See `ObjectTypes/CMakeLists.txt` for a more complex example of a QML module that contains a QML file as well as a C++ class.
+
+## Platform-specific CMake
+
+### iOS
+
+Configuring for iOS is not straightforward, it's poorly documented (by Qt and CMake) and is based on generating a very old format of Xcode project. As a result, if you just follow the documented instructions, you'll have to do a number of manual steps in Xcode each time you run CMake.
+
+I have developed my own surefire approach that enables 99% configuration in CMake, 1% in the `Info.plist` and 0% in Xcode:
+- [CMake for Qt 6 + Xcode (target iOS)](https://gist.github.com/paulmasri/b5d80c743530093feebe051774b09ca6)
