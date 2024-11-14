@@ -60,9 +60,9 @@ So in the case of `ToDoListModel/CMakeLists.txt`,
 
 ## How to create a QML module library
 
-A QML module is a special kind of library. Since Qt 6.2, Qt has made it easy to create a QML module using `qt_add_qml_module`.
+A QML module is a special kind of library. Since Qt 6.2, Qt has made it easy to create a QML module using [`qt_add_qml_module`](https://doc.qt.io/qt-6/qt-add-qml-module.html).
 
-If you're migrating from Qmake or you've been used to creating QML modules before Qt 6.2, you'll be familiar with having to register each module in your `main.cpp` and ensuring you've created a `qmldir`. Fortunately `qt_add_qml_module` does all of this for you. But it doesn't come without its own idiosyncracies.
+If you're migrating from qmake or you've been used to creating QML modules before Qt 6.2, you'll be familiar with having to register each module in your `main.cpp` and ensuring you've created a `qmldir`. Fortunately `qt_add_qml_module` does all of this for you. But it doesn't come without its own idiosyncracies.
 
 Let's consider a C++ class that extends QML. See `ToDoListModel/CMakeLists.txt`.
 
@@ -74,7 +74,9 @@ Let's consider a C++ class that extends QML. See `ToDoListModel/CMakeLists.txt`.
 3. Now look at the C++. To make an item available to QML engine, you also need to declare it using one of the [QQmlEngine macros](https://doc.qt.io/qt-6/qqmlengine.html#macros) in your C++.
    1. `#include <QtQml>` to make those macros available.
    2. The most common macro is `QML_ELEMENT` which you apply to a `QObject` derived class, alongside `Q_OBJECT`. By doing this, its properties and `Q_INVOKABLE` functions become available in QML. See `ToDoListModel/ToDoListModel.h`.
-4. Finally, when we link the main app target to this library (see `app/CMakeLists.txt`), because we want it to have the QML module, not a C++ library, within `target_link_libraries` we link to `ToDoListModelLibplugin` instead of linking to `ToDoListModelLib`. This gets generated for us by `qt_add_qml_module`. Note that the suffix is `plugin`, all lowercase.
+4. Finally, we link the main app target to this library (see `app/CMakeLists.txt`), again using `target_link_libraries`.
+   1. Because we want it to access a QML module, not a C++ library, we link to `ToDoListModelLibplugin` instead of `ToDoListModelLib`.
+   2. `ToDoListModelLibplugin` gets automatically generated for us by `qt_add_qml_module`, which applies the suffix `plugin` (all lowercase).
 
 See `ObjectTypes/CMakeLists.txt` for a more complex example of a QML module that contains a QML file as well as a C++ class.
 
@@ -86,3 +88,5 @@ Configuring for iOS is not straightforward, it's poorly documented (by Qt and CM
 
 I have developed my own surefire approach that enables 99% configuration in CMake, 1% in the `Info.plist` and 0% in Xcode:
 - [CMake for Qt 6 + Xcode (target iOS)](https://gist.github.com/paulmasri/b5d80c743530093feebe051774b09ca6)
+
+_Thanks to [Craig Scott](https://discourse.cmake.org/u/craig.scott) and [the CMake community for their tips](https://gitlab.kitware.com/cmake/cmake/-/issues/24399) along the way._
